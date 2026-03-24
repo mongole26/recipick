@@ -25,10 +25,10 @@
 
 | # | 작업 | 상태 |
 |---|------|------|
-| 1.1 | `utils/constants.dart` 생성 (색상, 사이즈 상수) | 🔲 |
-| 1.2 | 공통 위젯 추출 (`recipick_card`, `recipick_button`, `recipick_chip` 등) | 🔲 |
-| 1.3 | 기존 `ingredient_input_screen.dart`를 공통 위젯 사용하도록 리팩터링 | 🔲 |
-| 1.4 | `app/routes.dart` 라우팅 설정 | 🔲 |
+| 1.1 | `utils/constants.dart` 생성 (색상, 사이즈 상수) | ✅ |
+| 1.2 | 공통 위젯 추출 (`recipick_card`, `recipick_button`, `recipick_chip` 등) | ✅ |
+| 1.3 | 기존 `ingredient_input_screen.dart`를 공통 위젯 사용하도록 리팩터링 | ✅ |
+| 1.4 | `app/routes.dart` 라우팅 설정 | ✅ |
 
 **완료 기준:** 프로젝트 구조가 Target과 일치하고, 재료 입력 화면이 정상 동작
 
@@ -38,13 +38,13 @@
 
 | # | 작업 | 상태 |
 |---|------|------|
-| 2.1 | Supabase 프로젝트 생성 | 🔲 |
-| 2.2 | pgvector 확장 활성화 | 🔲 |
-| 2.3 | DB 스키마 생성 (recipes, ingredients, recipe_ingredients, recipe_embeddings, user_fridge) | 🔲 |
-| 2.4 | RLS 정책 설정 | 🔲 |
-| 2.5 | Flutter에 Supabase 연동 (`supabase_flutter` 패키지) | 🔲 |
-| 2.6 | Auth 설정 (익명 + Google + 카카오) | 🔲 |
-| 2.7 | `docs/generated/db-schema.md` 생성 | 🔲 |
+| 2.1 | Supabase 프로젝트 생성 | ✅ |
+| 2.2 | pgvector 확장 활성화 | ✅ |
+| 2.3 | DB 스키마 생성 (recipes, ingredients, recipe_ingredients, recipe_embeddings, user_fridge) | ✅ |
+| 2.4 | RLS 정책 설정 | ✅ |
+| 2.5 | Flutter에 Supabase 연동 (`supabase_flutter` 패키지) | ✅ |
+| 2.6 | Auth 설정 (익명 + Google + 카카오) | 🔲 (P1에서 진행) |
+| 2.7 | `docs/generated/db-schema.md` 생성 | ✅ |
 
 **완료 기준:** Flutter 앱에서 Supabase 연결 확인, 테이블 CRUD 동작
 
