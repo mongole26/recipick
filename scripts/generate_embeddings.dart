@@ -1,20 +1,42 @@
 /// 레시피 임베딩 생성 스크립트 (Google Gemini)
 ///
 /// 사용법: dart run scripts/generate_embeddings.dart
+/// 필요: 프로젝트 루트에 .env 파일 (SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GEMINI_API_KEY)
 
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 
-// ========================================
-// 설정
-// ========================================
-const supabaseUrl = 'https://tibyeamvajetfxxsknit.supabase.co';
-const supabaseServiceKey =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRpYnllYW12YWpldGZ4eHNrbml0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NDM1NTQ1MywiZXhwIjoyMDg5OTMxNDUzfQ.l3aKql9gBoItZJZrSfpmjjn_4L5Kq5doSUYc-HwwePM';
-const geminiApiKey = 'AIzaSyAFs8frrkeio4gEU1v3B6VTiveE0o-hNYk';
+/// .env 파일에서 환경변수를 읽어 Map으로 반환
+Map<String, String> loadEnv() {
+  final file = File('.env');
+  if (!file.existsSync()) {
+    print('❌ .env 파일이 없습니다. .env.example을 참고하여 생성해주세요.');
+    exit(1);
+  }
+  final lines = file.readAsLinesSync();
+  final env = <String, String>{};
+  for (final line in lines) {
+    final trimmed = line.trim();
+    if (trimmed.isEmpty || trimmed.startsWith('#')) continue;
+    final idx = trimmed.indexOf('=');
+    if (idx == -1) continue;
+    env[trimmed.substring(0, idx)] = trimmed.substring(idx + 1);
+  }
+  return env;
+}
 
 Future<void> main() async {
+  final env = loadEnv();
+  final supabaseUrl = env['SUPABASE_URL'];
+  final supabaseServiceKey = env['SUPABASE_SERVICE_ROLE_KEY'];
+  final geminiApiKey = env['GEMINI_API_KEY'];
+
+  if (supabaseUrl == null || supabaseServiceKey == null || geminiApiKey == null) {
+    print('❌ .env에 SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, GEMINI_API_KEY가 필요합니다.');
+    exit(1);
+  }
+
   print('📦 레시피 데이터 가져오는 중...');
 
   // 1. Supabase에서 레시피 조회
@@ -38,8 +60,8 @@ Future<void> main() async {
   var skipCount = 0;
 
   for (final recipe in recipes) {
-    final recipeId = recipe['id'];
-    final title = recipe['title'];
+    final recipeId = recipe['id'] as String;
+    final title = recipe['title'] as String;
 
     // 이미 임베딩이 있는지 확인
     final existCheck = await http.get(
@@ -69,8 +91,8 @@ Future<void> main() async {
 
     final ingredients = jsonDecode(ingredientsRes.body) as List;
     final ingredientNames = ingredients
-        .map((i) => i['ingredients']?['name'] ?? '')
-        .where((n) => n.isNotEmpty)
+        .map((i) => (i as Map<String, dynamic>)['ingredients']?['name'] ?? '')
+        .where((n) => (n as String).isNotEmpty)
         .join(', ');
 
     final content =
@@ -98,8 +120,9 @@ Future<void> main() async {
       continue;
     }
 
-    final embeddingData = jsonDecode(embeddingRes.body);
-    final embedding = embeddingData['embedding']['values'] as List;
+    final embeddingData = jsonDecode(embeddingRes.body) as Map<String, dynamic>;
+    final embeddingMap = embeddingData['embedding'] as Map<String, dynamic>;
+    final embedding = embeddingMap['values'] as List;
 
     // 3. Supabase에 임베딩 저장
     final insertRes = await http.post(
