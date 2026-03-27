@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../config/supabase_config.dart';
 import '../../data/ingredients_data.dart';
+import '../../data/repositories/recipe_repository.dart';
 import '../../models/ingredient.dart';
+import '../../models/recipe.dart';
 import '../../utils/constants.dart';
 import '../../widgets/common/empty_state.dart';
 import '../../widgets/common/recipick_bottom_sheet.dart';
@@ -21,6 +24,7 @@ class _IngredientInputScreenState extends State<IngredientInputScreen> {
   final _searchController = TextEditingController();
   List<IngredientInfo> _suggestions = [];
   bool _isSearching = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -115,6 +119,83 @@ class _IngredientInputScreenState extends State<IngredientInputScreen> {
     setState(() => _ingredients.removeAt(index));
   }
 
+  Future<void> _onRecommendPressed() async {
+    setState(() => _isLoading = true);
+    try {
+      final repo = RecipeRepository(supabase);
+      final response = await repo.getRecommendations(_ingredients);
+      if (!mounted) return;
+
+      if (response.recommendations.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('추천할 레시피가 없습니다')),
+        );
+        return;
+      }
+
+      // Phase 5에서 추천 결과 화면으로 교체 예정
+      _showRecommendationDialog(response.recommendations);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('추천 실패: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _showRecommendationDialog(List<RecipeRecommendation> recipes) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('추천 레시피'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: recipes.map((r) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${r.title} (${r.matchPercent}% 일치)',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      r.aiReason,
+                      style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                    ),
+                    if (r.missingIngredients.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(
+                          '부족: ${r.missingIngredients.map((m) => m.name).join(", ")}',
+                          style: TextStyle(fontSize: 13, color: Colors.orange[700]),
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('닫기'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -157,6 +238,17 @@ class _IngredientInputScreenState extends State<IngredientInputScreen> {
           Expanded(
             child: _isSearching ? _buildSuggestionList() : _buildIngredientList(),
           ),
+
+          if (!_isSearching && _ingredients.isNotEmpty)
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(kPaddingPage, 8, kPaddingPage, 12),
+                child: RecipickButton(
+                  label: _isLoading ? '추천 중...' : '레시피 추천받기',
+                  onPressed: _isLoading ? null : _onRecommendPressed,
+                ),
+              ),
+            ),
         ],
       ),
     );

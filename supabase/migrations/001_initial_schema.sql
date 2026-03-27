@@ -44,7 +44,7 @@ create table public.recipe_ingredients (
 create table public.recipe_embeddings (
   id uuid primary key default gen_random_uuid(),
   recipe_id uuid not null references public.recipes(id) on delete cascade unique,
-  embedding extensions.vector(1536) not null,
+  embedding extensions.vector(768) not null,
   content text not null
 );
 
@@ -66,7 +66,7 @@ create index idx_recipe_ingredients_recipe on public.recipe_ingredients(recipe_i
 create index idx_recipe_ingredients_ingredient on public.recipe_ingredients(ingredient_id);
 create index idx_user_fridge_user on public.user_fridge(user_id);
 create index idx_recipe_embeddings_vector on public.recipe_embeddings
-  using ivfflat (embedding extensions.vector_cosine_ops) with (lists = 100);
+  using hnsw (embedding extensions.vector_cosine_ops);
 
 -- ========================================
 -- RLS (Row Level Security)
@@ -103,8 +103,8 @@ create policy "fridge_delete" on public.user_fridge
 -- ========================================
 
 create or replace function public.match_recipes(
-  query_embedding extensions.vector(1536),
-  match_threshold float default 0.5,
+  query_embedding extensions.vector(768),
+  match_threshold float default 0.3,
   match_count int default 20
 )
 returns table (

@@ -69,14 +69,14 @@
 
 | # | 작업 | 상태 |
 |---|------|------|
-| 4.1 | Edge Function: `recommend` 엔드포인트 생성 | 🔲 |
-| 4.2 | Step ①: 재료 매칭 쿼리 (recipe_ingredients JOIN) | 🔲 |
-| 4.3 | Step ②: 벡터 유사도 검색 (pgvector cosine similarity) | 🔲 |
-| 4.4 | Step ③: 후보 병합 + 랭킹 (매칭률 70% + 벡터 30%) | 🔲 |
-| 4.5 | Step ④: Claude Haiku 호출 (최종 3개 선별 + 추천 이유) | 🔲 |
-| 4.6 | LLM 프롬프트 작성 (`lib/services/prompts/`) | 🔲 |
-| 4.7 | Fallback 처리 (LLM 실패 시 DB 매칭 결과만 반환) | 🔲 |
-| 4.8 | 응답 시간 최적화 (3초 이내 목표) | 🔲 |
+| 4.1 | Edge Function: `recommend` 엔드포인트 생성 | ✅ |
+| 4.2 | Step ①: 재료 매칭 쿼리 (recipe_ingredients JOIN) | ✅ |
+| 4.3 | Step ②: 벡터 유사도 검색 (pgvector cosine similarity) | ✅ |
+| 4.4 | Step ③: 후보 병합 + 랭킹 (매칭률 70% + 벡터 30%) | ✅ |
+| 4.5 | Step ④: Gemini Flash 호출 (최종 3개 선별 + 추천 이유) | ✅ |
+| 4.6 | LLM 프롬프트 작성 (Edge Function 내장) | ✅ |
+| 4.7 | Fallback 처리 (LLM 실패 시 DB 매칭 결과만 반환) | ✅ |
+| 4.8 | Flutter 클라이언트 연동 (모델 + 리포지토리 + 버튼) | ✅ |
 
 **완료 기준:** Edge Function 호출 시 재료 기반 레시피 3개 + 추천 이유 반환
 

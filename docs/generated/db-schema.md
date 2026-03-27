@@ -70,7 +70,7 @@ user_fridge
 |-------|------|------|------|
 | id | uuid | PK | |
 | recipe_id | uuid | FK → recipes, UNIQUE, NOT NULL | |
-| embedding | vector(1536) | NOT NULL | OpenAI embedding |
+| embedding | vector(768) | NOT NULL | Gemini embedding-001 |
 | content | text | NOT NULL | 임베딩 원본 텍스트 |
 
 ### user_fridge
@@ -94,7 +94,7 @@ user_fridge
 | recipe_ingredients | recipe_id | btree |
 | recipe_ingredients | ingredient_id | btree |
 | user_fridge | user_id | btree |
-| recipe_embeddings | embedding | ivfflat (cosine) |
+| recipe_embeddings | embedding | hnsw (cosine) |
 
 ---
 
@@ -115,6 +115,6 @@ user_fridge
 ### match_recipes(query_embedding, match_threshold, match_count)
 벡터 유사도 기반 레시피 검색.
 
-- **입력**: query_embedding (vector 1536), threshold (float, default 0.5), count (int, default 20)
+- **입력**: query_embedding (vector 768), threshold (float, default 0.3), count (int, default 20)
 - **출력**: recipe_id (uuid), similarity (float)
 - **정렬**: cosine similarity 내림차순
