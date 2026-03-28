@@ -82,6 +82,91 @@ class MissingIngredient {
   }
 }
 
+/// 레시피 재료 항목
+class RecipeIngredientItem {
+  final String name;
+  final double? quantity;
+  final String? unit;
+
+  const RecipeIngredientItem({
+    required this.name,
+    this.quantity,
+    this.unit,
+  });
+
+  String get displayText {
+    if (quantity != null && unit != null) {
+      final qtyStr = quantity == quantity!.roundToDouble()
+          ? quantity!.toInt().toString()
+          : quantity.toString();
+      return '$name $qtyStr$unit';
+    }
+    return name;
+  }
+}
+
+/// 레시피 상세 정보
+class RecipeDetail {
+  final String id;
+  final String title;
+  final String? description;
+  final int? cookTime;
+  final String? difficulty;
+  final int? servings;
+  final String? imageUrl;
+  final List<CookingStep> instructions;
+  final List<RecipeIngredientItem> ingredients;
+
+  const RecipeDetail({
+    required this.id,
+    required this.title,
+    this.description,
+    this.cookTime,
+    this.difficulty,
+    this.servings,
+    this.imageUrl,
+    required this.instructions,
+    required this.ingredients,
+  });
+
+  factory RecipeDetail.fromJson(
+    Map<String, dynamic> json,
+    List<RecipeIngredientItem> ingredients,
+  ) {
+    final rawInstructions = json['instructions'] as List<dynamic>? ?? [];
+    return RecipeDetail(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      description: json['description'] as String?,
+      cookTime: json['cook_time'] as int?,
+      difficulty: json['difficulty'] as String?,
+      servings: json['servings'] as int?,
+      imageUrl: json['image_url'] as String?,
+      instructions: rawInstructions
+          .map((e) => CookingStep.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      ingredients: ingredients,
+    );
+  }
+
+  String get cookTimeText => cookTime != null ? '$cookTime분' : '';
+}
+
+/// 조리 순서 단계
+class CookingStep {
+  final int step;
+  final String text;
+
+  const CookingStep({required this.step, required this.text});
+
+  factory CookingStep.fromJson(Map<String, dynamic> json) {
+    return CookingStep(
+      step: json['step'] as int,
+      text: json['text'] as String,
+    );
+  }
+}
+
 /// Edge Function 전체 응답
 class RecommendationResponse {
   final List<RecipeRecommendation> recommendations;
